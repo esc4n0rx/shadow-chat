@@ -1,23 +1,26 @@
+
 "use client";
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const EnterRoomForm: React.FC = () => {
-  const [roomId, setRoomId] = useState<string>('');
-  const [roomName, setRoomName] = useState<string>('');
-  const [keyString, setKeyString] = useState<string>('');
+  const [roomLink, setRoomLink] = useState<string>('');
   const router = useRouter();
 
   const handleEnterRoom = () => {
-    if (!roomId.trim() || !keyString.trim()) {
-      alert('Por favor, insira o código da sala e a chave de criptografia.');
+    if (!roomLink.trim()) {
+      alert('Por favor, insira o link da sala.');
       return;
     }
 
-    const url = `/room/${roomId}?name=${encodeURIComponent(roomName)}#key=${encodeURIComponent(keyString)}`;
-
-    router.push(url);
+    try {
+      const url = new URL(roomLink);
+      const path = url.pathname + url.search + url.hash;
+      router.push(path);
+    } catch (error) {
+      alert('Link inválido. Por favor, insira um link válido da sala.');
+    }
   };
 
   return (
@@ -25,25 +28,11 @@ const EnterRoomForm: React.FC = () => {
       <h2 className="text-2xl text-white mb-4">Entrar em Sala Privada</h2>
       <input
         type="text"
-        placeholder="Código da Sala"
-        value={roomId}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoomId(e.target.value)}
+        placeholder="Link da Sala"
+        value={roomLink}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoomLink(e.target.value)}
         className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
       />
-      <input
-        type="text"
-        placeholder="Nome da Sala (opcional)"
-        value={roomName}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoomName(e.target.value)}
-        className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
-      />
-      <textarea
-        placeholder="Chave de Criptografia"
-        value={keyString}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setKeyString(e.target.value)}
-        className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
-        rows={4}
-      ></textarea>
       <button
         onClick={handleEnterRoom}
         className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
