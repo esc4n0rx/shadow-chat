@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import CreateRoomForm from './components/CreateRoomForm';
 import EnterRoomForm from './components/EnterRoomForm';
+import Image from 'next/image';
 
 const HomePage = () => {
   const [showOptions, setShowOptions] = useState(false);
@@ -33,12 +34,16 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center">
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{ backgroundImage: "url('/fundo.jpg')" }}
+    >
       {!showOptions && !showContactForm && (
-        <div className="text-center">
+        <div className="bg-white bg-opacity-10 backdrop-blur-md p-8 rounded-lg shadow-lg text-center max-w-md mx-4">
+          <Image src="/logo.png" alt="Logo" width={128} height={128} className="mx-auto mb-4" />
           <h1 className="text-5xl text-white mb-4">ShadowChat</h1>
           <p className="text-gray-300 mb-8">
-            Um chat privado e seguro para conversas criptografadas
+            Um chat privado e seguro para conversas criptografadas.
             Nada do que estiver aqui pode ser visto.
           </p>
           <div className="space-x-4">
@@ -65,9 +70,9 @@ const HomePage = () => {
       )}
 
       {showOptions && (
-        <div>
-          <h1 className="text-4xl text-white mb-8">ShadowChat</h1>
-          <div className="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-10">
+        <div className="bg-white bg-opacity-10 backdrop-blur-md p-8 rounded-lg shadow-lg max-w-2xl mx-4">
+          <h1 className="text-4xl text-white mb-8 text-center">ShadowChat</h1>
+          <div className="flex flex-col md:flex-row md:space-x-10">
             <CreateRoomForm />
             <EnterRoomForm />
           </div>
@@ -75,24 +80,24 @@ const HomePage = () => {
       )}
 
       {showContactForm && (
-        <div className="bg-gray-800 p-6 rounded-lg">
+        <div className="bg-white bg-opacity-10 backdrop-blur-md p-8 rounded-lg shadow-lg text-center max-w-md mx-4">
           <h2 className="text-2xl text-white mb-4">Contato</h2>
           <form onSubmit={handleContactFormSubmit}>
             <input
               type="text"
               placeholder="Seu Nome"
-              className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
+              className="w-full p-2 mb-4 bg-gray-700 bg-opacity-50 text-white rounded"
               required
             />
             <input
               type="email"
               placeholder="Seu Email"
-              className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
+              className="w-full p-2 mb-4 bg-gray-700 bg-opacity-50 text-white rounded"
               required
             />
             <textarea
               placeholder="Sua Mensagem"
-              className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
+              className="w-full p-2 mb-4 bg-gray-700 bg-opacity-50 text-white rounded"
               required
             ></textarea>
             <div className="flex justify-between">

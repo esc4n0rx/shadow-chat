@@ -30,6 +30,7 @@ const CreateRoomForm: React.FC = () => {
   };
 
   return (
+  <div className="p-6 rounded-lg bg-gray-800 bg-opacity-50">
     <div className="bg-gray-800 p-6 rounded-lg">
       <h2 className="text-2xl text-white mb-4">Criar Sala Privada</h2>
       <input
@@ -46,6 +47,7 @@ const CreateRoomForm: React.FC = () => {
         Criar Sala
       </button>
     </div>
+  </div>
   );
 };
 

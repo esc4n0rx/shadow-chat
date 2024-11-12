@@ -24,6 +24,7 @@ const EnterRoomForm: React.FC = () => {
   };
 
   return (
+  <div className="p-6 rounded-lg bg-gray-800 bg-opacity-50">
     <div className="bg-gray-800 p-6 rounded-lg">
       <h2 className="text-2xl text-white mb-4">Entrar em Sala Privada</h2>
       <input
@@ -40,6 +41,7 @@ const EnterRoomForm: React.FC = () => {
         Entrar na Sala
       </button>
     </div>
+  </div>
   );
 };
 
