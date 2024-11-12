@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { generateRandomName } from '../utils/randomNameGenerator';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
@@ -13,9 +13,7 @@ import { getSocket } from '../utils/socket';
 import {
   encryptMessage,
   decryptMessage,
-  generateKey,
   importKey,
-  exportKey,
 } from '../utils/encryption';
 
 interface ChatRoomProps {
@@ -26,15 +24,19 @@ interface ChatRoomProps {
 const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
+  const [exportedKey, setExportedKey] = useState<JsonWebKey | null>(null);
   const [userName] = useState<string>(() => generateRandomName());
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const setupEncryptionKey = async () => {
       let keyData = sessionStorage.getItem(`encryptionKey-${roomId}`);
       if (keyData) {
-        const importedKey = await importKey(JSON.parse(keyData));
+        const exportedKey = JSON.parse(keyData);
+        const importedKey = await importKey(exportedKey);
         setEncryptionKey(importedKey);
+        setExportedKey(exportedKey);
       } else {
         const hash = window.location.hash;
         const params = new URLSearchParams(hash.substring(1));
@@ -45,6 +47,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
           const importedKey = await importKey(exportedKey);
           sessionStorage.setItem(`encryptionKey-${roomId}`, JSON.stringify(exportedKey));
           setEncryptionKey(importedKey);
+          setExportedKey(exportedKey);
         } else {
           alert('Chave de criptografia não encontrada. Certifique-se de usar o link correto.');
           router.push('/');
@@ -137,6 +140,27 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
     }, 15000);
   };
 
+  // Gerar o link completo da sala com a chave
+  const getRoomLink = () => {
+    if (!exportedKey) return '';
+    const keyString = encodeURIComponent(JSON.stringify(exportedKey));
+    const currentUrl = window.location.origin;
+    const roomNameParam = roomName ? `?name=${encodeURIComponent(roomName)}` : '';
+    return `${currentUrl}/room/${roomId}${roomNameParam}#key=${keyString}`;
+  };
+
+  const copyRoomLink = () => {
+    const link = getRoomLink();
+    navigator.clipboard.writeText(link).then(
+      () => {
+        alert('Link copiado para a área de transferência!');
+      },
+      (err) => {
+        alert('Falha ao copiar o link: ' + err);
+      }
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       <header className="p-4 bg-gray-800 flex justify-between items-center">
@@ -145,6 +169,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
       </header>
       <div className="p-2 text-center bg-gray-800">
         Código da sala: <span className="font-mono">{roomId}</span>
+        <button
+          onClick={copyRoomLink}
+          className="ml-4 bg-blue-600 text-white py-1 px-2 rounded hover:bg-blue-700 transition"
+        >
+          Copiar Link da Sala
+        </button>
       </div>
       <MessageList messages={messages} />
       <MessageInput onSendMessage={sendMessage} />
