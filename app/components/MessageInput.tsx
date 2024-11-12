@@ -1,33 +1,60 @@
-// components/MessageInput.tsx
+"use client";
 
 import React, { useState } from 'react';
+import { FaSmile } from 'react-icons/fa';
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 
 interface MessageInputProps {
   onSendMessage: (messageText: string) => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
-  const [message, setMessage] = useState<string>('');
+  const [messageText, setMessageText] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const handleSend = () => {
-    if (message.trim()) {
-      onSendMessage(message);
-      setMessage('');
+  const handleSendMessage = () => {
+    if (messageText.trim()) {
+      onSendMessage(messageText);
+      setMessageText('');
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const addEmoji = (emoji: any) => {
+    setMessageText((prev) => prev + emoji.native);
+  };
+
   return (
-    <div className="p-4 bg-gray-800 flex">
+    <div className="p-4 bg-gray-800 flex relative">
+      <button
+        onClick={() => setShowEmojiPicker((val) => !val)}
+        className="text-white mr-2"
+      >
+        <FaSmile size={24} />
+      </button>
+      {showEmojiPicker && (
+        <div className="absolute bottom-12 left-0 z-10">
+          <Picker data={data} onEmojiSelect={addEmoji} theme="dark" />
+        </div>
+      )}
       <input
         type="text"
-        placeholder="Digite sua mensagem..."
-        value={message}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)}
-        className="flex-1 p-2 rounded bg-gray-700 text-white"
+        value={messageText}
+        onChange={(e) => setMessageText(e.target.value)}
+        onKeyPress={handleKeyPress}
+        placeholder="Digite sua mensagem"
+        className="flex-grow p-2 bg-gray-700 text-white rounded-l"
       />
       <button
-        onClick={handleSend}
-        className="ml-2 bg-blue-600 p-2 rounded text-white hover:bg-blue-700 transition"
+        onClick={handleSendMessage}
+        className="bg-blue-600 text-white py-2 px-4 rounded-r hover:bg-blue-700 transition"
       >
         Enviar
       </button>

@@ -38,7 +38,8 @@ const HomePage = () => {
         <div className="text-center">
           <h1 className="text-5xl text-white mb-4">ShadowChat</h1>
           <p className="text-gray-300 mb-8">
-            Um chat privado e seguro para conversas criptografadas.
+            Um chat privado e seguro para conversas criptografadas
+            Nada do que estiver aqui pode ser visto.
           </p>
           <div className="space-x-4">
             <button

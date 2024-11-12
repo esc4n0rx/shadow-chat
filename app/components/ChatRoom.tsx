@@ -140,7 +140,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
     }, 15000);
   };
 
-  // Gerar o link completo da sala com a chave
   const getRoomLink = () => {
     if (!exportedKey) return '';
     const keyString = encodeURIComponent(JSON.stringify(exportedKey));
@@ -161,11 +160,24 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
     );
   };
 
+  const leaveRoom = () => {
+    sessionStorage.removeItem(`encryptionKey-${roomId}`);
+    router.push('/');
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       <header className="p-4 bg-gray-800 flex justify-between items-center">
         <h2 className="text-xl">{roomName || 'Sala de Chat'}</h2>
-        <span>{userName}</span>
+        <div className="flex items-center">
+          <span className="mr-4">{userName}</span>
+          <button
+            onClick={leaveRoom}
+            className="bg-red-600 text-white py-1 px-2 rounded hover:bg-red-700 transition"
+          >
+            Sair
+          </button>
+        </div>
       </header>
       <div className="p-2 text-center bg-gray-800">
         Código da sala: <span className="font-mono">{roomId}</span>
