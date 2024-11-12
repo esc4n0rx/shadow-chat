@@ -36,15 +36,24 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
         const importedKey = await importKey(JSON.parse(keyData));
         setEncryptionKey(importedKey);
       } else {
-        const newKey = await generateKey();
-        const exportedKey = await exportKey(newKey);
-        sessionStorage.setItem(`encryptionKey-${roomId}`, JSON.stringify(exportedKey));
-        setEncryptionKey(newKey);
+        const hash = window.location.hash;
+        const params = new URLSearchParams(hash.substring(1));
+        const keyString = params.get('key');
+
+        if (keyString) {
+          const exportedKey = JSON.parse(decodeURIComponent(keyString));
+          const importedKey = await importKey(exportedKey);
+          sessionStorage.setItem(`encryptionKey-${roomId}`, JSON.stringify(exportedKey));
+          setEncryptionKey(importedKey);
+        } else {
+          alert('Chave de criptografia não encontrada. Certifique-se de usar o link correto.');
+          router.push('/');
+        }
       }
     };
 
     setupEncryptionKey();
-  }, [roomId]);
+  }, [roomId, router]);
 
   useEffect(() => {
     if (!encryptionKey) return;

@@ -1,4 +1,3 @@
-// components/CreateRoomForm.tsx
 
 "use client";
 
@@ -21,9 +20,13 @@ const CreateRoomForm: React.FC = () => {
 
     const encryptionKey = await generateKey();
     const exportedKey = await exportKey(encryptionKey);
+    const keyString = encodeURIComponent(JSON.stringify(exportedKey));
+
     sessionStorage.setItem(`encryptionKey-${roomId}`, JSON.stringify(exportedKey));
 
-    router.push(`/room/${roomId}?name=${encodeURIComponent(roomName)}`);
+    const url = `/room/${roomId}?name=${encodeURIComponent(roomName)}#key=${keyString}`;
+
+    router.push(url);
   };
 
   return (
