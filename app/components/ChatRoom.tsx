@@ -1,5 +1,3 @@
-// components/ChatRoom.tsx
-
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -77,22 +75,44 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
       if (data.type === 'message') {
         const iv = new Uint8Array(data.iv);
         const encryptedData = new Uint8Array(data.encryptedData).buffer;
-        const decryptedText = await decryptMessage(encryptedData, encryptionKey, iv);
-
-        const newMessage: Message = {
-          id: data.id,
-          user: data.user,
-          text: decryptedText,
-          timestamp: Date.now(),
-        };
-        setMessages((prev) => [...prev, newMessage]);
-
-        setTimeout(() => {
-          setMessages((prev) => prev.filter((msg) => msg.id !== data.id));
-        }, 15000);
+        const messageType = data.messageType;
+    
+        if (messageType === 'text') {
+          const decryptedText = await decryptMessage(encryptedData, encryptionKey, iv);
+    
+          const newMessage: Message = {
+            id: data.id,
+            user: data.user,
+            text: decryptedText as string,
+            timestamp: Date.now(),
+            messageType: 'text',
+          };
+          setMessages((prev) => [...prev, newMessage]);
+    
+          setTimeout(() => {
+            setMessages((prev) => prev.filter((msg) => msg.id !== data.id));
+          }, 15000);
+        } else if (messageType === 'file') {
+          const decryptedData = await decryptMessage(encryptedData, encryptionKey, iv, 'ArrayBuffer');
+    
+          const newMessage: Message = {
+            id: data.id,
+            user: data.user,
+            fileName: data.fileName,
+            fileType: data.fileType,
+            fileData: decryptedData as ArrayBuffer,
+            timestamp: Date.now(),
+            messageType: 'file',
+          };
+          setMessages((prev) => [...prev, newMessage]);
+    
+          setTimeout(() => {
+            setMessages((prev) => prev.filter((msg) => msg.id !== data.id));
+          }, 15000);
+        }
       }
     };
-
+    
     socket.onclose = () => {
       console.log('Conexão fechada');
     };
@@ -118,6 +138,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
 
     const messageData = {
       type: 'message',
+      messageType: 'text',
       roomId,
       id: messageId,
       user: userName,
@@ -132,6 +153,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
       user: userName,
       text: messageText,
       timestamp: Date.now(),
+      messageType: 'text',
     };
     setMessages((prev) => [...prev, newMessage]);
 
@@ -139,6 +161,58 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
       setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
     }, 15000);
   };
+
+  const sendFile = async (file: File) => {
+    if (!encryptionKey) return;
+  
+    if (file.size > 5 * 1024 * 1024) { 
+      alert('O arquivo é muito grande. O tamanho máximo permitido é de 5 MB.');
+      return;
+    }
+  
+    const reader = new FileReader();
+  
+    reader.onload = async () => {
+      const arrayBuffer = reader.result as ArrayBuffer;
+      const { encryptedData, iv } = await encryptMessage(arrayBuffer, encryptionKey);
+  
+      const messageId = uuidv4();
+  
+      const socket = getSocket(roomId);
+  
+      const messageData = {
+        type: 'message',
+        messageType: 'file',
+        roomId,
+        id: messageId,
+        user: userName,
+        fileName: file.name,
+        fileType: file.type,
+        encryptedData: Array.from(new Uint8Array(encryptedData)),
+        iv: Array.from(iv),
+      };
+  
+      socket.send(JSON.stringify(messageData));
+  
+      const newMessage: Message = {
+        id: messageId,
+        user: userName,
+        fileName: file.name,
+        fileType: file.type,
+        fileData: arrayBuffer,
+        timestamp: Date.now(),
+        messageType: 'file',
+      };
+      setMessages((prev) => [...prev, newMessage]);
+  
+      setTimeout(() => {
+        setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      }, 15000);
+    };
+  
+    reader.readAsArrayBuffer(file);
+  };
+  
 
   const getRoomLink = () => {
     if (!exportedKey) return '';
@@ -189,7 +263,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
         </button>
       </div>
       <MessageList messages={messages} />
-      <MessageInput onSendMessage={sendMessage} />
+      <MessageInput onSendMessage={sendMessage} onSendFile={sendFile} />
     </div>
   );
 };

@@ -17,23 +17,52 @@ export async function generateKey(): Promise<CryptoKey> {
   }
   
   export async function encryptMessage(
-    message: string,
+    message: string | ArrayBuffer,
     key: CryptoKey
   ): Promise<{ encryptedData: ArrayBuffer; iv: Uint8Array }> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(message);
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const encryptedData = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+  
+    let encodedMessage: ArrayBuffer;
+  
+    if (typeof message === 'string') {
+      encodedMessage = new TextEncoder().encode(message);
+    } else {
+      encodedMessage = message;
+    }
+  
+    const encryptedData = await crypto.subtle.encrypt(
+      {
+        name: 'AES-GCM',
+        iv: iv,
+      },
+      key,
+      encodedMessage
+    );
+  
     return { encryptedData, iv };
   }
   
   export async function decryptMessage(
     encryptedData: ArrayBuffer,
     key: CryptoKey,
-    iv: Uint8Array
-  ): Promise<string> {
-    const decryptedData = await window.crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedData);
-    const decoder = new TextDecoder();
-    return decoder.decode(decryptedData);
+    iv: Uint8Array,
+    returnType: 'string' | 'ArrayBuffer' = 'string'
+  ): Promise<string | ArrayBuffer> {
+    const decryptedData = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: iv,
+      },
+      key,
+      encryptedData
+    );
+  
+    if (returnType === 'string') {
+      const decodedMessage = new TextDecoder().decode(decryptedData);
+      return decodedMessage;
+    } else {
+      return decryptedData;
+    }
   }
+  
   

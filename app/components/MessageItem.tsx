@@ -1,5 +1,3 @@
-// components/MessageItem.tsx
-
 import React, { useEffect, useState } from 'react';
 
 interface Message {
