@@ -76,10 +76,10 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
         const iv = new Uint8Array(data.iv);
         const encryptedData = new Uint8Array(data.encryptedData).buffer;
         const messageType = data.messageType;
-    
+
         if (messageType === 'text') {
           const decryptedText = await decryptMessage(encryptedData, encryptionKey, iv);
-    
+
           const newMessage: Message = {
             id: data.id,
             user: data.user,
@@ -88,13 +88,13 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
             messageType: 'text',
           };
           setMessages((prev) => [...prev, newMessage]);
-    
+
           setTimeout(() => {
             setMessages((prev) => prev.filter((msg) => msg.id !== data.id));
           }, 15000);
         } else if (messageType === 'file') {
           const decryptedData = await decryptMessage(encryptedData, encryptionKey, iv, 'ArrayBuffer');
-    
+
           const newMessage: Message = {
             id: data.id,
             user: data.user,
@@ -105,14 +105,31 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
             messageType: 'file',
           };
           setMessages((prev) => [...prev, newMessage]);
-    
+
+          setTimeout(() => {
+            setMessages((prev) => prev.filter((msg) => msg.id !== data.id));
+          }, 15000);
+        } else if (messageType === 'audio') {
+          const decryptedData = await decryptMessage(encryptedData, encryptionKey, iv, 'ArrayBuffer');
+
+          const newMessage: Message = {
+            id: data.id,
+            user: data.user,
+            fileName: data.fileName,
+            fileType: data.fileType,
+            fileData: decryptedData as ArrayBuffer,
+            timestamp: Date.now(),
+            messageType: 'audio',
+          };
+          setMessages((prev) => [...prev, newMessage]);
+
           setTimeout(() => {
             setMessages((prev) => prev.filter((msg) => msg.id !== data.id));
           }, 15000);
         }
       }
     };
-    
+
     socket.onclose = () => {
       console.log('Conexão fechada');
     };
@@ -164,22 +181,22 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
 
   const sendFile = async (file: File) => {
     if (!encryptionKey) return;
-  
-    if (file.size > 5 * 1024 * 1024) { 
+
+    if (file.size > 5 * 1024 * 1024) { // Limite de 5 MB
       alert('O arquivo é muito grande. O tamanho máximo permitido é de 5 MB.');
       return;
     }
-  
+
     const reader = new FileReader();
-  
+
     reader.onload = async () => {
       const arrayBuffer = reader.result as ArrayBuffer;
       const { encryptedData, iv } = await encryptMessage(arrayBuffer, encryptionKey);
-  
+
       const messageId = uuidv4();
-  
+
       const socket = getSocket(roomId);
-  
+
       const messageData = {
         type: 'message',
         messageType: 'file',
@@ -191,9 +208,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
         encryptedData: Array.from(new Uint8Array(encryptedData)),
         iv: Array.from(iv),
       };
-  
+
       socket.send(JSON.stringify(messageData));
-  
+
       const newMessage: Message = {
         id: messageId,
         user: userName,
@@ -204,15 +221,65 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
         messageType: 'file',
       };
       setMessages((prev) => [...prev, newMessage]);
-  
+
       setTimeout(() => {
         setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
       }, 15000);
     };
-  
+
     reader.readAsArrayBuffer(file);
   };
-  
+
+  const sendAudio = async (audioBlob: Blob) => {
+    if (!encryptionKey) return;
+
+    if (audioBlob.size > 5 * 1024 * 1024) { // Limite de 5 MB
+      alert('O áudio é muito grande. O tamanho máximo permitido é de 5 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = async () => {
+      const arrayBuffer = reader.result as ArrayBuffer;
+      const { encryptedData, iv } = await encryptMessage(arrayBuffer, encryptionKey);
+
+      const messageId = uuidv4();
+
+      const socket = getSocket(roomId);
+
+      const messageData = {
+        type: 'message',
+        messageType: 'audio',
+        roomId,
+        id: messageId,
+        user: userName,
+        fileName: 'audio.wav', // Nome padrão, pode ser ajustado conforme necessário
+        fileType: audioBlob.type,
+        encryptedData: Array.from(new Uint8Array(encryptedData)),
+        iv: Array.from(iv),
+      };
+
+      socket.send(JSON.stringify(messageData));
+
+      const newMessage: Message = {
+        id: messageId,
+        user: userName,
+        fileName: 'audio.wav',
+        fileType: audioBlob.type,
+        fileData: arrayBuffer,
+        timestamp: Date.now(),
+        messageType: 'audio',
+      };
+      setMessages((prev) => [...prev, newMessage]);
+
+      setTimeout(() => {
+        setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      }, 15000);
+    };
+
+    reader.readAsArrayBuffer(audioBlob);
+  };
 
   const getRoomLink = () => {
     if (!exportedKey) return '';
@@ -263,7 +330,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, roomName }) => {
         </button>
       </div>
       <MessageList messages={messages} />
-      <MessageInput onSendMessage={sendMessage} onSendFile={sendFile} />
+      <MessageInput onSendMessage={sendMessage} onSendFile={sendFile} onSendAudio={sendAudio} />
     </div>
   );
 };

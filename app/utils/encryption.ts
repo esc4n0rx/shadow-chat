@@ -1,5 +1,3 @@
-// utils/encryption.ts
-
 export async function generateKey(): Promise<CryptoKey> {
     return await window.crypto.subtle.generateKey(
       { name: 'AES-GCM', length: 256 },

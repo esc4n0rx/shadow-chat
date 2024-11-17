@@ -36,6 +36,16 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
           </a>
         );
       }
+    } else if (message.messageType === 'audio') {
+      const blob = new Blob([message.fileData!], { type: message.fileType });
+      const url = URL.createObjectURL(blob);
+
+      return (
+        <audio controls>
+          <source src={url} type={message.fileType} />
+          Seu navegador não suporta o elemento de áudio.
+        </audio>
+      );
     }
   };
 

@@ -1,11 +1,9 @@
-// types/types.ts
-
 export interface Message {
   id: string;
   user: string;
   text?: string;
   timestamp: number;
-  messageType: 'text' | 'file';
+  messageType: 'text' | 'file' | 'audio';
   fileName?: string;
   fileType?: string;
   fileData?: ArrayBuffer;
