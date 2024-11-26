@@ -17,7 +17,7 @@ ShadowChat é uma aplicação web de chat privado e seguro que permite que os us
 
 ## Tecnologias Utilizadas
 
-- **Frontend**: Next.js com React, utilizando Tailwind CSS para estilização.
+- **Frontend**: Next.js,Typescript e utilizando Tailwind CSS para estilização.
 - **Backend**: FastAPI (Python) com suporte a WebSockets para comunicação em tempo real.
 - **Criptografia**: Web Crypto API para criptografar e descriptografar mensagens no lado do cliente.
 - **Hospedagem**:
@@ -30,7 +30,7 @@ ShadowChat é uma aplicação web de chat privado e seguro que permite que os us
 
 - **Node.js** (versão 14 ou superior)
 - **Python** (versão 3.7 ou superior)
-- **npm** ou **yarn**
+- **npm**
 - **pip** para gerenciamento de pacotes Python
 
 ### Passos
@@ -81,16 +81,12 @@ ShadowChat é uma aplicação web de chat privado e seguro que permite que os us
 
    ```bash
    npm install
-   # ou
-   yarn install
    ```
 
    Execute o servidor de desenvolvimento:
 
    ```bash
    npm run dev
-   # ou
-   yarn dev
    ```
 
 4. **Acessar a Aplicação**
@@ -101,7 +97,7 @@ ShadowChat é uma aplicação web de chat privado e seguro que permite que os us
 
 ### Página Inicial
 
-Ao acessar a aplicação, você verá a tela inicial com o nome do projeto, um resumo e três opções: Iniciar, Github e Contato.
+Ao acessar a aplicação, você verá a tela inicial um resumo e três opções: Iniciar, Github e Contato.
 
 - **Iniciar**: Leva você para as opções de criar uma nova sala ou entrar em uma sala existente.
 - **Github**: Abre o repositório do projeto no Github.
@@ -123,6 +119,7 @@ Ao acessar a aplicação, você verá a tela inicial com o nome do projeto, um r
 - Digite sua mensagem no campo de entrada.
 - Pressione Enter ou clique em Enviar para enviar a mensagem.
 - Use o ícone de emoji para adicionar emojis às suas mensagens.
+- Pode enviar audio ou arquivos para seu amigo.
 
 ### Sair da Sala
 
